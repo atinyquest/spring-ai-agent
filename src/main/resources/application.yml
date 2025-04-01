@@ -1,0 +1,91 @@
+spring:
+  application:
+    name: spring-ai-agent
+  threads:
+    virtual:
+      enabled: true
+  security:
+    endpoints:
+      web:
+        cors:
+          allowed-methods: GET, POST, PUT, DELETE, OPTIONS # GET, POST, PUT, DELETE, OPTIONS, HEAD, FETCH
+          max-age: 3600
+          allowed-origin-patterns: 'http://localhost:8080'
+          allow-credentials: true
+          allowed-headers: '*'
+  datasource:
+    master:
+      driverClassName: org.mariadb.jdbc.Driver
+      jdbcUrl: jdbc:mariadb://localhost:3306/mydb
+      username: root
+      password: root
+      pool-name: pool-master
+      maximum-pool-size: 10
+      max-lifetime: 550000
+      connection-timeout: 500
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+        useLocalSessionState: true
+        rewriteBatchedStatements: true
+        cacheResultSetMetadata: true
+        cacheServerConfiguration: true
+        elideSetAutoCommits: true
+        maintainTimeStats: false
+    slave:
+      driverClassName: org.mariadb.jdbc.Driver
+      jdbcUrl: jdbc:mariadb://localhost:3307/mydb
+      username: root
+      password: root
+      pool-name: pool-slave
+      maximum-pool-size: 10
+      max-lifetime: 550000
+      connection-timeout: 500
+      read-only: true
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+        useLocalSessionState: true
+        rewriteBatchedStatements: true
+        cacheResultSetMetadata: true
+        cacheServerConfiguration: true
+        elideSetAutoCommits: true
+        maintainTimeStats: false
+  jpa:
+    open-in-view: true
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true  # SQL 포맷팅
+        dialect: org.hibernate.dialect.MariaDBDialect
+
+openai:
+  api-key: ${OPENAI-API-KEY}
+  model: gpt-4
+  base-url: https://api.openai.com/v1
+  path: /chat/completions
+  stream: false
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %magenta(${PID}) --- %cyan(%logger{36}) : %msg%n"
+  level:
+    root: ERROR
+    org.springframework.web: INFO
+    org.springframework.web.filter: INFO
+    org.springframework.security: debug
+    org.springframework.http.client: debug
+    com.tinyquest: INFO
+    jdbc.sqltiming: OFF
+    jdbc.resultsettable: OFF
+    jdbc.connection: WARN
+    com.zaxxer.hikari: WARN
+    com.zaxxer.hikari.HikariConfig: WARN
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE

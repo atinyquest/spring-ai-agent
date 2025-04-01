@@ -1,0 +1,98 @@
+#services:
+#  mariadb:
+#    image: mariadb:10.6
+#    container_name: mariadb
+#    restart: always
+#    environment:
+#      MYSQL_ROOT_PASSWORD: root
+#      MYSQL_DATABASE: batchdb
+#      MYSQL_USER: batchuser
+#      MYSQL_PASSWORD: batchpass
+#    ports:
+#      - "3306:3306"
+#    healthcheck:
+#      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot" ]
+#      interval: 10s
+#      retries: 5
+#      timeout: 5s
+#    volumes:
+#      - mariadb_data:/var/lib/mariadb
+#    command: [ "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
+#
+#volumes:
+#  mariadb_data:
+services:
+  mariadb-master:
+    image: mariadb:10.6
+    container_name: mariadb-master
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+      MYSQL_REPLICATION_USER: repl
+      MYSQL_REPLICATION_PASSWORD: replpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_master_data:/var/lib/mysql
+      - ./config/master.cnf:/etc/mysql/conf.d/master.cnf  # 마스터 설정 적용
+      - ./config/master-init.sql:/docker-entrypoint-initdb.d/init.sql  # Master 초기 설정
+    networks:
+      - mariadb_network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot" ]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  mariadb-slave:
+    image: mariadb:10.6
+    container_name: mariadb-slave
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+      MYSQL_REPLICATION_USER: repl
+      MYSQL_REPLICATION_PASSWORD: replpassword
+    ports:
+      - "3307:3306"
+    depends_on:
+      mariadb-master:
+        condition: service_healthy
+    volumes:
+      - mariadb_slave_data:/var/lib/mysql
+      - ./config/slave.cnf:/etc/mysql/conf.d/slave.cnf  # 슬레이브 설정 적용
+    networks:
+      - mariadb_network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot" ]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  replication-setup:
+    image: mariadb:10.6
+    container_name: replication-setup
+    depends_on:
+      mariadb-slave:
+        condition: service_healthy
+    volumes:
+      - mariadb_setup_data:/var/lib/mysql
+      - ./config/setup-replication.sh:/setup-replication.sh
+    networks:
+      - mariadb_network
+    entrypoint: ["/bin/bash", "/setup-replication.sh"]
+    restart: "no"  # ✅ 실행 후 바로 종료하도록 설정
+
+volumes:
+  mariadb_master_data:
+  mariadb_slave_data:
+  mariadb_setup_data:
+
+networks:
+  mariadb_network:
+    driver: bridge
