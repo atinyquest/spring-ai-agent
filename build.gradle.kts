@@ -48,4 +48,16 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+
+	doFirst {
+		val agentJar = configurations.testRuntimeClasspath.get().files
+			.firstOrNull { it.name.contains("byte-buddy-agent") }
+
+		if (agentJar != null) {
+			jvmArgs("-javaagent:${agentJar.absolutePath}")
+			println("✅ Mockito agent attached: ${agentJar.name}")
+		} else {
+			println("⚠️ Byte Buddy Agent not found in classpath.")
+		}
+	}
 }
