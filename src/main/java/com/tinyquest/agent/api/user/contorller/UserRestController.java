@@ -24,6 +24,6 @@ public class UserRestController {
 
     @GetMapping
     public String getUsers() {
-        return "OK3331132";
+        return "OK";
     }
 }
