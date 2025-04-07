@@ -3,7 +3,7 @@ name: Block invalid PRs to production
 on:
   pull_request:
     branches:
-      - production
+      - Production
 
 jobs:
   check-source:
