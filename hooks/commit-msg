@@ -1,9 +1,27 @@
 #!/bin/bash
-COMMIT_MSG_FILE=$1
-REGEX="^(feat|fix|docs|style|refactor|test|chore): .{5,}"
 
-if ! grep -qE "$REGEX" "$COMMIT_MSG_FILE"; then
-  echo "❌ 커밋 메시지 형식이 올바르지 않습니다."
-  echo "예: feat: 로그인 기능 구현"
-  exit 1
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+BRANCH_NAME=$(git symbolic-ref --short HEAD)
+
+# 커밋 메시지가 이미 prefix (예: feat:) 있으면 패스
+if [[ "$COMMIT_MSG" =~ ^(feat|fix|docs|style|refactor|test|chore): ]]; then
+  exit 0
 fi
+
+# 브랜치 이름 기반 prefix 결정
+if [[ "$BRANCH_NAME" == Feature/* ]]; then
+  PREFIX="feat"
+elif [[ "$BRANCH_NAME" == Fix/* || "$BRANCH_NAME" == Hotfix/* ]]; then
+  PREFIX="fix"
+elif [[ "$BRANCH_NAME" == Docs/* ]]; then
+  PREFIX="docs"
+elif [[ "$BRANCH_NAME" == Refactor/* ]]; then
+  PREFIX="refactor"
+else
+  PREFIX="chore"
+fi
+
+# 커밋 메시지에 prefix 추가
+echo "${PREFIX}: $COMMIT_MSG" > "$COMMIT_MSG_FILE"
+echo "ℹ️ 커밋 메시지에 자동 prefix 추가됨: ${PREFIX}"
