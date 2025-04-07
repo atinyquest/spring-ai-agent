@@ -7,6 +7,7 @@ on:
 
 jobs:
   check-source:
+    name: flow
     runs-on: ubuntu-latest
     steps:
       - name: Fail if not from release/* or hotfix/*
