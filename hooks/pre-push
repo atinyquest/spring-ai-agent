@@ -1,6 +1,6 @@
 #!/bin/bash
 BRANCH_NAME=$(git symbolic-ref --short HEAD)
-REGEX="^(feat|fix|hotfix|release)/[a-z0-9\-]+$"
+REGEX="^(Production|Development|Feature|Hotfix|Release)(/[a-z0-9\-]+)?$"
 
 if ! [[ "$BRANCH_NAME" =~ $REGEX ]]; then
   echo "❌ 브랜치 이름이 규칙에 맞지 않습니다: $BRANCH_NAME"
