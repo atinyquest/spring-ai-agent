@@ -1,0 +1,9 @@
+#!/bin/bash
+COMMIT_MSG_FILE=$1
+REGEX="^(feat|fix|docs|style|refactor|test|chore): .{5,}"
+
+if ! grep -qE "$REGEX" "$COMMIT_MSG_FILE"; then
+  echo "❌ 커밋 메시지 형식이 올바르지 않습니다."
+  echo "예: feat: 로그인 기능 구현"
+  exit 1
+fi

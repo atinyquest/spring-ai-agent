@@ -76,3 +76,17 @@ tasks.withType<Test> {
 		}
 	}
 }
+
+tasks.register("installGitHooks", Copy::class) {
+	from("hooks")
+	into(".git/hooks")
+	doLast {
+		fileTree(".git/hooks").forEach {
+			it.setExecutable(true)
+		}
+	}
+}
+
+tasks.named("build") {
+	dependsOn("installGitHooks")
+}
