@@ -12,7 +12,10 @@ jobs:
       - name: Fail if not from release/* or hotfix/*
         run: |
           echo "🔍 PR Source Branch: ${{ github.head_ref }}"
-          if [[ "${{ github.head_ref }}" != release/* && "${{ github.head_ref }}" != hotfix/* ]]; then
+          
+          BRANCH="${{ github.head_ref }}"
+          
+          if [[ ! "$BRANCH" =~ ^(release|hotfix)/ ]]; then
             echo "❌ Only release/* or hotfix/* branches can merge into production."
             exit 1
           fi
