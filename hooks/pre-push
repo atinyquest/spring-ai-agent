@@ -1,9 +1,45 @@
 #!/bin/bash
+
+# 현재 브랜치 이름
 BRANCH_NAME=$(git symbolic-ref --short HEAD)
+
+# 브랜치 네이밍 규칙 정규식
 REGEX="^(Production|Development|Feature|Hotfix|Release)(/[a-z0-9\-]+)?$"
 
+# 브랜치 이름 규칙 검사
 if ! [[ "$BRANCH_NAME" =~ $REGEX ]]; then
   echo "❌ 브랜치 이름이 규칙에 맞지 않습니다: $BRANCH_NAME"
-  echo "예: feat/login-form, fix/user-error"
+  echo "👉 올바른 예: Feature/login-form, Hotfix/fix-bug"
   exit 1
 fi
+
+# === Feature 브랜치 검사 ===
+if [[ "$BRANCH_NAME" == Feature/* ]]; then
+  BASE_BRANCH="Development"
+  BASE_COMMIT=$(git merge-base "$BRANCH_NAME" "$BASE_BRANCH" 2>/dev/null)
+  BASE_HEAD=$(git rev-parse "$BASE_BRANCH" 2>/dev/null)
+
+  if [[ "$BASE_COMMIT" != "$BASE_HEAD" ]]; then
+    echo "❌ [BLOCKED] Feature 브랜치는 Development 브랜치에서 파생되어야 합니다."
+    echo "👉 현재 브랜치: $BRANCH_NAME"
+    exit 1
+  fi
+fi
+
+# === Hotfix 브랜치 검사 ===
+if [[ "$BRANCH_NAME" == Hotfix/* ]]; then
+  BASE_RELEASE=$(git merge-base "$BRANCH_NAME" Release 2>/dev/null || true)
+  BASE_PROD=$(git merge-base "$BRANCH_NAME" Production 2>/dev/null || true)
+
+  HEAD_RELEASE=$(git rev-parse Release 2>/dev/null || echo "")
+  HEAD_PROD=$(git rev-parse Production 2>/dev/null || echo "")
+
+  if [[ "$BASE_RELEASE" != "$HEAD_RELEASE" && "$BASE_PROD" != "$HEAD_PROD" ]]; then
+    echo "❌ [BLOCKED] Hotfix 브랜치는 Release 또는 Production 브랜치에서 파생되어야 합니다."
+    echo "👉 현재 브랜치: $BRANCH_NAME"
+    exit 1
+  fi
+fi
+
+# === 모든 조건 통과 시 푸시 허용 ===
+exit 0
