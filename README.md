@@ -1,9 +1,12 @@
-# 스프링 ai 에이전트 개발
+# 스프링 AI 에이전트 개발
 
 ## 개발환경
 - Intellij
 - Java, JDK 21 (필수)
 - Docker, Docker Compose (필수)
+
+## 소스 받은 이후 필수적으로 실행
+- ./gradlew build
 
 ## OpenAI API Key 등록
 - vm 옵션 : -DOPENAI-API-KEY=[여기에 키를 넣어주세요.]
