@@ -16,7 +16,7 @@ jobs:
           
           BRANCH="${{ github.head_ref }}"
           
-          if [[ ! "$BRANCH" =~ ^(release|hotfix)/ ]]; then
-            echo "❌ Only release/* or hotfix/* branches can merge into production."
+          if [[ ! "$BRANCH" =~ ^(Release|Hotfix)/ ]]; then
+            echo "❌ Only Release/* or Hotfix/* branches can merge into production."
             exit 1
           fi
